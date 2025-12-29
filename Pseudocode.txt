@@ -1,0 +1,182 @@
+struct Edge<
+    target: pointer to Vertex
+    weight: integer
+    next: pointer to Edge
+>
+
+struct Vertex<
+    id: string
+    distance: integer
+    firstEdge: pointer to Edge
+    prevVertex: pointer to Vertex
+>
+
+struct Graph<
+    vertices array of Vertex
+>
+
+struct Pair<
+    first: integer
+    second: pointer to Vertex
+>
+
+struct QueueElement<
+    info: Pair
+    prev: pointer to QueueElement
+    next: pointer to QueueElement
+>
+
+PriorityQueue<
+    top: pointer to QueueElement
+>
+
+boolean empty(q: PriorityQueue)
+procedure push(in/out q: PriorityQueue, in p: Pair)
+procedure pop(in/out q: PriorityQueue)
+
+function dijkstraIteratif(in/out graph : Graph, in idStart, idFinish : string) -> integer
+kamus
+    Element: Pair // Bentuk aslinya {first: int, second: pointer to Vertex}
+    pq: PriorityQueue // Queue yang isinya vertex yang sudah di-traverse dan merupakan path optimal
+    startNode, finishNode, currentVertex, targetVertex, u: pointer to Vertex
+    distance: integer
+    edge: pointer to Edge
+algoritma
+    startNode = finishNode = NIL
+
+    // Untuk setiap vertex dalam graf, perlu di-reset dulu state distance dan previousVertexnya
+    foreach u in graph.vertices do
+        u.prevVertex = NIL
+        if u.id == idStart then
+            u.distance = 0
+            startNode = u
+        else
+            u.distance = INFINITY
+        endif
+        if u.id == idFinish then
+            finishNode = u
+        endif
+    endforeach
+    
+    // Kalau vertex start atau finish tidak ada di dalam graf, maka return -1 (tidak ada path)
+    if startNode == NIL or finishNode == NIL then
+        return -1
+    endif
+
+    push(pq, Pair(0, startNode))
+
+    while not empty(pq) do
+        distance = pq.top.first // Jarak untuk vertex yang diakses
+        currentVertex = pq.top.second // Vertex yang diakses
+        
+        pop(pq)
+
+        if distance > currentVertex.distance then
+            continue
+        endif
+
+        if currentVertex == finishNode then
+            return 1
+        endif
+
+        edge = currentVertex.firstEdge
+        while edge != NIL do
+            targetVertex = edge.target
+            weight = edge.weight
+
+            // Kalau distance dari currentVertex ke vertex tujuan lebih kecil dari distance yang tercatat
+            // di vertex tujuan, maka ditukar, terus masukin vertex tujuannya ke queue
+            if currentVertex.distance != INFINITY and currentVertex.distance + weight < targetVertex.distance then
+                targetVertex.distance = currentVertex.distance + weight
+                targetVertex.prevVertex = currentVertex
+
+                push(pq, Pair(targetVertex.distance, targetVertex))
+            endif
+            edge = edge.next
+        endwhile
+    endwhile
+
+    // Kalau distance finishNode masih INFINITY, berarti belum ketemu path ke dirinya, kalau tidak INFINITY,
+    // maka ada path ke dirinya dari startNode
+    if finishNode.distance == INFINITY then
+        return -1
+    else
+        return 1
+    endif
+endfunction
+
+procedure dijkstraRekursifSub(in/out pq: PriorityQueue, in/out finishNode: pointer to Vertex)
+kamus
+    distance: integer
+    currentVertex, targetVertex: pointer to Vertex
+    edge: pointer to Edge
+algoritma
+    if empty(pq) then
+        return
+    endif
+
+    distance = pq.top.first
+    currentVertex = pq.top.second
+
+    pop(pq)
+
+    if distance > currentVertex.distance then
+        dijkstraRekursifSub(pq, finishNode)
+        return
+    endif
+
+    if currentVertex == finishNode then
+        return
+    endif
+
+    edge = currentVertex.firstEdge
+    while edge != NIL do
+        targetVertex = edge.target
+        if currentVertex.distance != INFINITY and currentVertex.distance + edge.weight < targetVertex.distance then
+            targetVertex.distance = currentVertex.distance + edge.weight
+            targetVertex.prevVertex = currentVertex
+            push(pq, Pair(targetVertex.distance, targetVertex))
+        endif
+        edge = edge.next
+    endwhile
+
+    dijkstraRekursifSub(pq, finishNode)
+endprocedure
+
+function dijkstraRekursif(in/out graph: Graph, in idStart, idFinish: string) -> integer
+kamus
+    Element: Pair
+    pq: PriorityQueue
+    startNode, finishNode, u: pointer to Vertex
+algoritma
+    startNode = finishNode = NIL
+
+    foreach u in graph.vertices do
+        u.prevVertex = NIL
+        
+        if u.id == idStart then
+            u.distance = 0
+            startNode = untuk
+        else
+            u.distance = INFINITY
+        endif
+
+        if u.id == idFinish then
+            finishNode = u
+        endif
+    endforeach
+
+    if startNode == NIL or finishNode == NIL then
+        return -1
+    endif
+
+    push(pq, Pair(0, startNode))
+
+    dijkstraRekursifSub(pq, finishNode)
+
+    if finishNode.distance == INFINITY then
+        return -1
+    else
+        return 1
+    endif
+endfunction
