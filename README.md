@@ -2,6 +2,6 @@ The program will first generate a map of weighted graph predefined in the main f
 
 The current map looks like this
 
-![alt text](Map Telkom.png)
+![map telkom](./"Map Telkom.png")
 
 This program is made for Algorithm Complexity's final project.
